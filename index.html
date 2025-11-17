@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vite App</title>
+  </head>
+  <body>
+    <!-- 头部区域 -->
+    <header>
+      <div class="wrapper">
+        成都市地铁智慧管理系统
+      </div>
+      <button class="all">总览</button>
+    </header>
+
+    <!-- canvas画布，实现天气效果，无交互，仅做可视化 -->
+     <canvas id="weatherCanvas">
+      
+     </canvas>
+
+
+    <button class="sky">
+      成都市
+      当前天气:<p class="now">获取中...</p>
+      体感温度:<p class="tem">获取中...</p><p>℃</p>
+    </button>
+
+    <div id="cesiumContainer">
+      <!-- 侧边栏 -->
+    <aside>
+      <nav>
+        <div class = 'navHeader'>
+          图层控制
+        </div>
+        <div class="navBody">
+          <div class="navItem">
+        <span class="txt">卫星地图</span>
+         <label class="switch">
+        <input type="checkbox" id="weiXingSwitch" class="switch-input">
+          <span class="slider round"></span>
+        </label>
+          </div>
+
+          <div class="navItem">
+        <span class="txt">矢量地图</span>
+         <label class="switch">
+        <input type="checkbox" id="shiLiangSwitch" class="switch-input">
+          <span class="slider round"></span>
+        </label>
+          </div>
+          <div class="navItem">
+        <span class="txt">区县矢量</span>
+         <label class="switch">
+        <input type="checkbox" id="quxianSwitch" class="switch-input">
+          <span class="slider round"></span>
+        </label>
+          </div>
+        </div>
+        
+      </nav>
+    </div>
+
+    <!-- 右侧侧边栏显示区县信息 -->
+     <div class="right">
+     </div>
+
+
+<div id="ui-container">
+  <label for="lineSelect">🚇 选择车辆段：</label>
+  <select id="lineSelect" >
+    <option value="">请选择车辆段</option>
+    <option value="0">1号线列车</option>
+    <option value="1">1号线南段列车</option>
+    <option value="2">2号线列车</option>
+    <option value="3">3号线列车</option>
+    <option value="4">4号线列车</option>
+    <option value="5">5号线列车</option>
+    <option value="6">6号线列车</option>
+    <option value="7">7号线列车(内环&外环)</option>
+    <option value="9">8号线列车</option>
+    <option value="11">9号线列车</option>
+    <option value="12">10号线列车</option>
+    <option value="13">10号线三期列车</option>
+    <option value="14">13号线一期列车</option>
+    <option value="15">17号线列车</option>
+    <option value="16">17号线二期列车</option>
+    <option value="17">18号线列车</option>
+    <option value="18">18号线北延段列车</option>
+    <option value="19">18号线临江段列车</option>
+    <option value="20">19号线二期列车</option>
+    <!-- 可自动生成 -->
+  </select>
+
+  
+</div>
+
+<div class="subwayLeft"></div>
+<div class="subwayright">
+  <div class="real-time-header">
+    <h3>实时运行监控</h3>
+    <div class="update-time" id="updateTime">最后更新: --</div>
+  </div>
+  
+  <div class="metrics-grid">
+    <!-- 速度图表 -->
+    <div class="metric-card">
+      <div class="metric-title">运行速度监控</div>
+      <div class="speed-chart" id="speedChart">
+        <canvas id="speedCanvas"></canvas>
+      </div>
+    </div>
+    
+    <!-- 载客量图表 -->
+    <div class="metric-card">
+      <div class="metric-title">实时载客量</div>
+      <div class="passenger-chart" id="passengerChart">
+        <canvas id="passengerCanvas"></canvas>
+      </div>
+    </div>
+    
+    <!-- 运行状态 -->
+    <div class="metric-card full-width">
+      <div class="metric-title">列车运行状态</div>
+      <div class="status-list" id="statusList">
+        <!-- 动态生成状态列表 -->
+      </div>
+    </div>
+    
+    <!-- 基础指标 -->
+    <div class="metric-card">
+      <div class="metric-title">运行指标</div>
+      <div class="basic-metrics">
+        <div class="metric-item">
+          <span class="metric-label">平均速度</span>
+          <span class="metric-value" id="avgSpeed">-- km/h</span>
+        </div>
+        <div class="metric-item">
+          <span class="metric-label">平均载客率</span>
+          <span class="metric-value" id="avgLoad">-- %</span>
+        </div>
+        <div class="metric-item">
+          <span class="metric-label">准点率</span>
+          <span class="metric-value" id="punctuality">-- %</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="op" id="op">
+      列车员
+    <div class="opretor" id="opretor"></div>
+    </div>
+  </div>
+</div>
+
+
+<div id="toast" class="toast">按 ESC 键退出跟随模式</div>
+<script type="module" src="/src/main9 copy.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  </body>
+</html>
