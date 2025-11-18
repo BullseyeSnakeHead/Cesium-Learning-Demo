@@ -328,6 +328,50 @@ const fetchWeather = async () => {
 }
 fetchWeather()
 
+// 天气效果
+function startRain () {
+  const canvas = document.getElementById('weatherCanvas')
+  // canvans的2d绘图
+  const ctx = canvas.getContext("2d")
+  let width = canvas.width = window.innerWidth
+  let height = canvas.height = window.innerHeight
+  // 空数组存放“雨滴” count表示雨滴的数量
+  const drops = []
+  const count = 200
+
+  // 遍历count添加雨滴,追加给雨滴数组
+  for(let i = 0; i < count ;i++) {
+    drops.push ({
+      x: Math.random() * width,  //随机x位置
+      y: Math.random() * height, //随机y位置
+      speed: 4 + Math.random() * 4, //初始速度，初速度不能为0，4+随机数
+      length: 40 + Math.random() * 10 //随机长度（大小）  
+    })
+  }
+
+  // 动画函数
+  function animate () {
+    // 清除画布上一帧渲染的内容（必要，除非需要虚影效果）
+    ctx.clearRect(0,0,width,height);
+    ctx.strokeStyle = "rgba(200,200,255,0.3)"; //雨滴颜色
+    ctx.lineWidth = 2.4;
+    drops.forEach(drop => {
+      ctx.beginPath()  //开启路径
+      ctx.moveTo(drop.x,drop.y) //路径轨迹
+      ctx.lineTo(drop.x,drop.y + drop.length) //雨滴
+      ctx.stroke();
+      drop.y += drop.speed;
+      if (drop.y > height) {
+        drop.y = -20;
+        drop.x = Math.random() * width;
+      }
+    })
+    requestAnimationFrame(animate); //请求动画函数
+  }
+  animate(); //与上述请求形成闭循环
+}
+startRain()
+
 
 let districtDataSource
 let entitiesA 
@@ -1035,7 +1079,7 @@ window.addEventListener('keydown', e => {
 viewer.dataSources.add(subwayLabels);
 
 
-
+// AI
 // ========== 🟩 实时监控渲染逻辑 ==========
 let speedChart, passengerChart, realTimeTimer;
 
@@ -1227,8 +1271,6 @@ passengerChart = new Chart(ctxPassenger, {
     }
   }, 2000);
 }
-
-
 });
 });
 });

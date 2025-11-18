@@ -571,12 +571,11 @@ border-radius:8px;
 /* 透明canvas画布的天气效果 */
 #weatherCanvas {
   position: absolute;
-  top: 60px;   /* header 高度 */
+  top: 10px;   /* header 高度 */
   left: 0;
   width: 100%;
-  height: 120px;
-  /* 重点：不可交互 pointer-events:none */
-  pointer-events: none;   
+  height: 300px;
+  pointer-events: none;    /* 重点：不可交互 pointer-events:none */
   z-index: 3;
   /* background-color: pink; */
 }
