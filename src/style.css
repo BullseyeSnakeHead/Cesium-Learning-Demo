@@ -580,9 +580,22 @@ border-radius:8px;
   /* background-color: pink; */
 }
 
-/* 阴天多云效果 */
+/* 阴天多云效果  将filter: blur(50px); 设置的极大，模糊两张图片的边界 */ 
 #weatherCanvas.fog {
-  background: url("/public/雾效果图/VCG211377349546\ \(1\).png") ;
+  background: url("/雾效果图/VCG211377349546 (1).png") ;
+  opacity: 0.4;
+  background-size: contain;
+  filter: blur(50px);  
+  animation: fogMove 15s linear infinite;
+}
+@keyframes fogMove {
+  from { background-position: 0 0; }
+  to { background-position: 1000px 0; }
+}
+
+/* 雾霾效果 */
+#weatherCanvas.smog {
+  background: url("/雾效果图/VCG211377349546 (1).png") ;
   opacity: 0.6;
   background-size: contain;
   filter: blur(50px);  
@@ -591,4 +604,19 @@ border-radius:8px;
 @keyframes fogMove {
   from { background-position: 0 0; }
   to { background-position: 1000px 0; }
+}
+
+/* 晴天效果 */
+#weatherCanvas.sunny {
+  position: absolute;
+  top: 60px;
+  left: 0;
+  width: 100%;
+  height: 180px;
+  pointer-events: none;
+  z-index: 3;
+  filter: blur(100px);
+  background: radial-gradient(circle at 20% 20%,
+      rgba(241, 241, 241, 0.35),
+      rgba(176, 188, 68, 0));
 }

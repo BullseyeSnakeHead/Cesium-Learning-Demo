@@ -313,22 +313,18 @@ const fetchWeather = async () => {
   const url = `https://pc4y3jummu.re.qweatherapi.com/v7/weather/now?location=${location}&key=${key}`;
   const response = await fetch(url);
   const data = await response.json();
-  // console.log(data);
+  console.log(data);
+  const text = data.now.text
+  // console.log(text);
   let condition = data.now.text
-  let temperature = data.now.dew
+  let feelsLike = data.now.feelsLike
   // console.log(condition);
   const now = document.querySelector('.now')
   const tem = document.querySelector('.tem')
   now.innerHTML = condition
-  tem.innerHTML = temperature
+  tem.innerHTML = feelsLike
 
-  // 注意这里获取condition是异步的，如果将condition写作全局变量，即便在外部也是拿不到这个全局变量的，除非asyc await
-  // 所以这里全部写在这个异步操作里面了
-  // 阴天下雨效果
-}
-fetchWeather()
-
-// 天气效果——雨
+  // 天气效果——雨
 function startRain () {
   const canvas = document.getElementById('weatherCanvas')
   // canvans的2d绘图
@@ -337,7 +333,7 @@ function startRain () {
   let height = canvas.height = window.innerHeight
   // 空数组存放“雨滴” count表示雨滴的数量
   const drops = []
-  const count = 200
+  const count = 400
 
   // 遍历count添加雨滴,追加给雨滴数组
   for(let i = 0; i < count ;i++) {
@@ -371,15 +367,96 @@ function startRain () {
   animate(); //与上述请求形成闭循环
 }
 // 调用记得换位置到和风api下面的if里面
-startRain()
+// startRain()
 
-// 天气效果——阴（多云）
+// 天气效果——阴（多云） 原生css+keyframe动画贴图实现的
 function startFog() {
   const canvas = document.getElementById("weatherCanvas");
   canvas.classList.add("fog");
 }
-startFog()
+// 调用记得换位置到和风api下面的if里面
+// startFog()
 
+// 天气效果——雾/霾 改了一下阴（多云）的css样式的opacity
+function startSmog() {
+  const canvas = document.getElementById("weatherCanvas");
+  canvas.classList.add("smog");
+}
+// startSmog()
+
+// 天气效果——雪/雨夹雪 AI
+function startSnow() {
+  const canvas = document.getElementById("weatherCanvas");
+  const ctx = canvas.getContext("2d");
+
+  let width = canvas.width = window.innerWidth;
+  let height = canvas.height = window.innerHeight - 60;
+
+  const flakes = [];
+  const count = 200;   // 雪花数量
+
+  for (let i = 0; i < count; i++) {
+    flakes.push({
+      x: Math.random() * width,
+      y: Math.random() * height,
+      r: 2 + Math.random() * 4,           // 雪花大小
+      speed: 1.5 + Math.random() * 1.5,    // 下落速度
+      drift: (Math.random() - 0.5) * 1.2   // 左右飘动幅度
+    });
+  }
+
+  function animate() {
+    ctx.clearRect(0, 0, width, height);
+    ctx.fillStyle = "rgba(255, 255, 255, 0.9)"; // 白色雪花
+    flakes.forEach(f => {
+      // 绘制雪花
+      ctx.beginPath();
+      ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
+      ctx.fill();
+      // 下落
+      f.y += f.speed;
+      f.x += f.drift;       // 左右飘动
+      // 到底部后重新生成
+      if (f.y > height) {
+        f.y = -10;
+        f.x = Math.random() * width;
+      }
+
+      // 避免雪花一直飘到外面
+      if (f.x > width) f.x = 0;
+      if (f.x < 0) f.x = width;
+    });
+
+    requestAnimationFrame(animate);
+  }
+  animate();
+}
+// startSnow()
+
+// 晴天效果
+function startSunny() {
+  const canvas = document.getElementById("weatherCanvas");
+  canvas.classList.add("sunny");
+}
+// startSunny()
+
+// 注意这里获取condition是异步的，如果将condition写作全局变量，即便在外部也是拿不到这个全局变量的，除非asyc await
+// 所以这里全部写在这个异步操作里面了
+if (text.includes("雨") || text.includes("阵雨")) {
+startRain()
+} else if (text.includes("雪") || text.includes("雨夹雪")) {
+startSnow()
+} else if (text.includes("雾") || text.includes("霾")) {
+startFog()
+} else if (text.includes("阴") || text.includes("多云") ) {
+startSmog()
+} else if (text.includes("晴")) {
+startSunny()
+} else {
+startSunny()
+}
+}
+fetchWeather()
 
 let districtDataSource
 let entitiesA 
