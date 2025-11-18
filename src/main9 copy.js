@@ -328,7 +328,7 @@ const fetchWeather = async () => {
 }
 fetchWeather()
 
-// 天气效果
+// 天气效果——雨
 function startRain () {
   const canvas = document.getElementById('weatherCanvas')
   // canvans的2d绘图
@@ -370,7 +370,15 @@ function startRain () {
   }
   animate(); //与上述请求形成闭循环
 }
+// 调用记得换位置到和风api下面的if里面
 startRain()
+
+// 天气效果——阴（多云）
+function startFog() {
+  const canvas = document.getElementById("weatherCanvas");
+  canvas.classList.add("fog");
+}
+startFog()
 
 
 let districtDataSource
