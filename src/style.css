@@ -30,7 +30,7 @@ header {
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
   z-index: 1;
   overflow: hidden;
-      }
+ }
 
 /* 多边形背景装饰 */
 header::before {
@@ -121,6 +121,26 @@ header::before {
         z-index: 2;
       }
 
+      .weather {
+        position: absolute;
+        top: 15px;
+        right: 20px;
+        padding: 8px 16px;
+        background: linear-gradient(90deg, #00c6ff, #0072ff);
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        transition: background-color 0.3s ease;
+        z-index: 2;
+      }
+
+      .weather.active {
+        background: linear-gradient(90deg, #d6dede, #b7b9bc)
+      }
+
       .sky {
         display: flex;
         justify-content: space-around;
@@ -185,6 +205,8 @@ header::before {
   width: 30px;
   height: 20px;
 }
+
+
 
 .txt {
   display: block;
@@ -580,6 +602,10 @@ border-radius:8px;
   /* background-color: pink; */
 }
 
+#weatherCanvas.hidden {
+  display: none;
+}
+
 /* 阴天多云效果  将filter: blur(50px); 设置的极大，模糊两张图片的边界 */ 
 #weatherCanvas.fog {
   background: url("/雾效果图/VCG211377349546 (1).png") ;
@@ -620,3 +646,13 @@ border-radius:8px;
       rgba(241, 241, 241, 0.35),
       rgba(176, 188, 68, 0));
 }
+
+/* 天气效果按钮控制 */
+.toggle-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+
+

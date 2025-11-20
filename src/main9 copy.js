@@ -40,6 +40,14 @@ viewer.scene.light = new Cesium.DirectionalLight({
 });
 viewer.scene.highDynamicRange = true;
 
+// 轻提示 ai封装
+  function showToast(message, duration = 2500) {
+  const toast = document.getElementById('toast');
+  toast.textContent = message;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), duration);
+}
+
 // 以下是ai提供的纠偏算法，需要在所有加载的json文件之前调用
 // ===== 坐标系转换：WGS84 -> GCJ02 =====
 function outOfChina(lon, lat) {
@@ -458,12 +466,30 @@ startSunny()
 }
 fetchWeather()
 
+
+// 控制天气效果的显隐按钮（右上角）
+// 这一部分有几个点：
+// 1.开关实现显隐用classList.toggle非常方便，自动判断是否添加了相应类，如果无则添加，有就移除
+// 2.id名和类名在css里面可以连写，#XXX.YYY都是可以的。
+// 3.可以用isXXX对添加/移除的状态返回的布尔值进行判断，默认状态时false，点击一次的状态是true
+const weather = document.querySelector('.weather')
+weather.addEventListener('click', function () {
+const weatherCanvas = document.getElementById('weatherCanvas')
+const isHidden = weatherCanvas.classList.toggle('hidden')
+const isActive = this.classList.toggle('active')
+if(isHidden && isActive) {
+  showToast('关闭天气效果')
+}else {
+  showToast('开启天气效果')
+}
+})
+
+
 let districtDataSource
 let entitiesA 
 // ai写的，非常巧妙
 // ==========================
 // 成都区县交互逻辑优化版
-// ==========================
 
 Cesium.GeoJsonDataSource.load('/筛选/筛选.geojson', {
   fill: Cesium.Color.SKYBLUE.withAlpha(0.6),
@@ -486,7 +512,6 @@ Cesium.GeoJsonDataSource.load('/筛选/筛选.geojson', {
   // ---------- 注册全局相机监听（仅一次） ----------
   viewer.camera.changed.addEventListener(() => {
     if (!currentDistrictLabel || !currentDistrictData) return;
-    
     const cameraPosition = viewer.camera.positionCartographic;
     const lonNow = Cesium.Math.toDegrees(cameraPosition.longitude);
     const latNow = Cesium.Math.toDegrees(cameraPosition.latitude);
@@ -500,6 +525,7 @@ Cesium.GeoJsonDataSource.load('/筛选/筛选.geojson', {
       latNow > lat - 0.2 && latNow < lat + 0.2;
 
     // 当高度较低且仍在区县范围时显示标签
+    // 这里是异步的，所以可以写在文字标签数据源currentDistrictLabel之前，否则会出现uncatch
     currentDistrictLabel.label.show = isInArea && heightNow < baseHeight + 5000;
   });
 
@@ -835,6 +861,7 @@ for (const line of allLines) {
     const entity = line.data[i];
     if (!entity.position) continue;
     const pos = entity.position.getValue();
+    // 重置点要素的样式
     entity.billboard = undefined;
     entity.label = undefined;
 
@@ -878,7 +905,6 @@ viewer.dataSources.add(ds);
 // 集成的新数据源添加给viewer
 viewer.dataSources.add(subwayStations);
 
-const allLinesA = allLines
 
 // 全局时间配置（外层）
 const globalStart = Cesium.JulianDate.now();
@@ -900,12 +926,13 @@ for (let j = 0; j < xian.length; j++) {
 
   const lineEntity = xian[j];
   const now = Cesium.JulianDate.now();
-  const xianPositions = lineEntity.polyline.positions.getValue(now);
+  const xianPositions = lineEntity.polyline.positions.getValue(now); //线仍然具有position,表示的是拐点
   if (!xianPositions || !xianPositions.length) continue; 
   
   const property = new Cesium.SampledPositionProperty();
   let seconds = 0;
-
+  
+  // 对线段（列车的运行轨迹）进行插值
   for (let i = 0; i < xianPositions.length; i++) {
     const time = Cesium.JulianDate.addSeconds(globalStart, seconds, new Cesium.JulianDate());
     property.addSample(time, xianPositions[i]);
@@ -945,12 +972,6 @@ for (let j = 0; j < xian.length; j++) {
 // viewer.trackedEntity = trainEntity;
 // 跟踪状态isFollowing
 
-
-// 11.14修改bug，这里飞行分两个过程，第一步viewer.flyto(entity+角度 写法)定位车辆，
-// 第二步，then延时加载延迟函数，延时极短时间根据列车位置position向量写法设置相机位置，相机位置实时跟踪列车位置position(time)
-// 这样导致了一个问题，在延迟函数执行之前，如果连续点击切换，延迟函数还没执行，对象就已经被销毁了
-// 报错DeveloperError: This object was destroyed, i.e., destroy() was called.
-
 let isFollowing = false;
 let followHandler = null;
 
@@ -976,10 +997,8 @@ function followTrain(entity) {
   }).then(() => {
     setTimeout(() => {
       isFollowing = true;
-
       followHandler = function () {
         if (!isFollowing) return;
-        
         const time = viewer.clock.currentTime;
         const position = entity.position.getValue(time);
         if (!position) return;
@@ -1010,9 +1029,9 @@ function followTrain(entity) {
 // { heading, pitch, roll }（欧拉角）
 // { direction, up }（方向向量方式） 此处选用该种，方向向量基准点是地铁
 // { quaternion }（四元数方式）
-// 计算朝向，保证无翻滚
+// 计算朝向
 const transform = Cesium.Transforms.eastNorthUpToFixedFrame(position);
-const up = Cesium.Matrix4.getColumn(transform, 2, new Cesium.Cartesian3());    // 天
+const up = Cesium.Matrix4.getColumn(transform, 2, new Cesium.Cartesian3());    
 const direction = Cesium.Cartesian3.normalize(
   Cesium.Cartesian3.subtract(position, smoothPos, new Cesium.Cartesian3()),
   new Cesium.Cartesian3()
@@ -1042,13 +1061,7 @@ viewer.scene.postRender.addEventListener(followHandler);
 });
 }
 
-// 轻提示
-  function showToast(message, duration = 2500) {
-  const toast = document.getElementById('toast');
-  toast.textContent = message;
-  toast.classList.add('show');
-  setTimeout(() => toast.classList.remove('show'), duration);
-}
+
 
 
 // 下拉选择列车
