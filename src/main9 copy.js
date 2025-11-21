@@ -321,7 +321,7 @@ const fetchWeather = async () => {
   const url = `https://pc4y3jummu.re.qweatherapi.com/v7/weather/now?location=${location}&key=${key}`;
   const response = await fetch(url);
   const data = await response.json();
-  console.log(data);
+  // console.log(data);
   const text = data.now.text
   // console.log(text);
   let condition = data.now.text
@@ -531,6 +531,8 @@ Cesium.GeoJsonDataSource.load('/筛选/筛选.geojson', {
 
   // ---------- 点击事件 ----------
   viewer.screenSpaceEventHandler.setInputAction((movement) => {
+    // 点击事件需要确认拾取到的是区县实体,仅当区县矢量开启的时候才准进行pick操作
+    if(dataSource.show === false) return   // 这一行就解决了区县矢量隐藏时,点击地铁矢量会报错找不到polygen的问题
     const pickedObject = viewer.scene.pick(movement.position);
     if (!Cesium.defined(pickedObject) || !pickedObject.id) return;
 
@@ -634,8 +636,47 @@ loadAndCorrectGeoJSON('/地铁线路图json/成都地铁线.geojson').then((corr
   .then((dataSource) => {
   viewer.dataSources.add(dataSource)
   const xian = dataSource.entities.values   //数组包对象，21个entities，会出现一个线路对应多个entities的情况
+  // console.log(xian);
+  
+  // 添加功能，点击地铁线，显示地铁线路名称，显示该地铁线路，其他线路隐藏
+  // handler不要写在for循环里面,否则会多次创建监听器,各监听器冲突出现bug:永远只显示最后一条线
+  // 先写逻辑,再遍历控制
+  let currentVisibleLine = null; // 跟踪当前显示的线路
+  const handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
+  handler.setInputAction((movement) => {
+  const pickedObject = viewer.scene.pick(movement.position);
+  
+  if (Cesium.defined(pickedObject) && Cesium.defined(pickedObject.id) && 
+    dataSource.entities.contains(pickedObject.id)) {
+    
+    const clickedEntity = pickedObject.id;
+    
+    // 如果点击的是已显示的线路，则恢复显示所有线路
+    if (currentVisibleLine === clickedEntity) {
+      xian.forEach(entity => { entity.show = true; });
+      currentVisibleLine = null;
+      showToast("已恢复显示所有地铁线路");
+    } else {
+      // 显示点击的线路，隐藏其他
+      const lineName = clickedEntity.properties.Name.getValue();
+      xian.forEach(entity => {
+        entity.show = (entity === clickedEntity);
+      });
+      currentVisibleLine = clickedEntity;
+      showToast(`当前地铁线路：${lineName}`);
+    }
+  } else {
+    // 点击空白处恢复显示所有线路
+    if (currentVisibleLine) {
+      xian.forEach(entity => { entity.show = true; });
+      currentVisibleLine = null;
+      showToast("已恢复显示所有地铁线路");
+    }
+  }
+}, Cesium.ScreenSpaceEventType.LEFT_CLICK);
 
-  // 注册点击事件
+  
+  // 数据清洗，拿到xian的name和style,成为新的数组
   const xianStyleArr = []  //循环外定义数组，21次push
   for(let i = 0; i < xian.length ; i ++) {
     let bag = xian[i].properties 
@@ -1226,8 +1267,8 @@ function renderRealTimePanel(train) {
   const ctxSpeed = speedCanvas.getContext("2d");
   const ctxPassenger = passengerCanvas.getContext("2d");
 
-  // 🟦 初始化空图表
-  // 🚄 速度图表（亮色主题）
+  // 初始化空图表
+  // 速度图表（亮色主题）
 speedChart = new Chart(ctxSpeed, {
   type: "line",
   data: {
